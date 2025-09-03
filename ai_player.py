@@ -37,12 +37,12 @@ class TricTacToeAI:
         if game.check_winner(player, game.get_last_move()[1]):
             return 1000
         elif game.check_winner(-player, game.get_last_move()[1]):
-            return -1000
+            return -10000
 
         return self.heuristic_score(game, player)
 
-    def heuristic_score(self, game: TricTacToe, color: int):
-        player = 1 if color == 1 else -1
+    def heuristic_score(self, game: TricTacToe, player: int):
+        player = 1 if player == 1 else -1
         opponent = -player
         
         score = 0
@@ -55,27 +55,49 @@ class TricTacToeAI:
         
         board = game.get_board()
         
+        opponent_threats = 0
+        player_opportunities = 0
+        
         for pattern in patterns:
             line = [board[i] for i in pattern]
             
             player_count = line.count(player)
             opponent_count = line.count(opponent)
+            empty_count = line.count(0)
             
-            # Heavily penalize opponent threats
-            if opponent_count == 2 and player_count == 0:
-                score -= 1000000
-            elif opponent_count == 1 and player_count == 0:
-                score -= 20    
+            if opponent_count == 2 and empty_count == 1:
+                opponent_threats += 1
+                score -= 1000000  
+            elif opponent_count == 1 and empty_count == 2:
+                score -= 50       
             
-            if player_count == 2 and opponent_count == 0:
-                score += 500
-            elif player_count == 1 and opponent_count == 0:
-                score += 5    
+
+            if player_count == 2 and empty_count == 1:
+                player_opportunities += 1
+                score += 10000    
+            elif player_count == 1 and empty_count == 2:
+                score += 10      
         
+       
+        if opponent_threats > 1:
+            score -= 10000000
+        
+     
         if board[4] == player:
-            score += 15
+            score += 20
+        elif board[4] == opponent:
+            score -= 15
+        
+
+        corners = [0, 2, 6, 8]
+        for corner in corners:
+            if board[corner] == player:
+                score += 5
+            elif board[corner] == opponent:
+                score -= 3
         
         return score
+
 
 
     def order_moves(self, moves):
