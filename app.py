@@ -38,7 +38,7 @@ def handle_move(pos):
         st.rerun() 
     else:
         st.session_state.message = "Invalid move. Try again."
-        st.rerun()  
+        st.rerun()
 
 # Page title
 st.markdown(
@@ -54,7 +54,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Inject CSS for square buttons
+# Inject CSS for square buttons AND game over overlay
 st.markdown(
     """
     <style>
@@ -73,6 +73,23 @@ st.markdown(
         border-color: #666;
         transform: scale(1.05);
     }
+    .game-board {
+        position: relative;
+    }
+    .game-over-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(150, 0, 0, 1);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 10px;
+        font-size: 2em;
+        font-weight: bold;
+        text-align: center;
+        z-index: 1000;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -81,6 +98,14 @@ st.markdown(
 # Game status
 st.subheader(st.session_state.message)
 
+# Game board container with overlay
+st.markdown('<div class="game-board">', unsafe_allow_html=True)
+
+# Game over overlay (appears over the board)
+if game.game_over:
+    overlay_text = "🎉 YOU WIN! 🎉" if game.winner == 1 else "🤖 AI WINS! 🤖"
+    st.markdown(f'<div class="game-over-overlay">{overlay_text}</div>', unsafe_allow_html=True)
+
 # Game board layout (3x3 grid)
 rows = [st.columns(3) for _ in range(3)]
 for i in range(9):
@@ -88,6 +113,8 @@ for i in range(9):
         button_label = get_symbol(game.board[i]) or " "
         if st.button(button_label, key=f"btn_{i}"):
             handle_move(i)
+
+st.markdown('</div>', unsafe_allow_html=True)  # Close game-board container
 
 st.markdown(
     f"<h4 style='text-align: center; font-size: 2em;'>Moves until first removal: {game.moves_until_removal()}</h4>",
@@ -98,4 +125,3 @@ st.markdown(
 cols = st.columns([1.5, 2, 1])
 with cols[1]:
     st.button("New Game", on_click=reset_game)
-
